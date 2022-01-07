@@ -1,0 +1,26 @@
+# docker-compose script to build mecab-ko-python3.
+#
+# Author : Taehwan Yoo (kofmap@gmail.com)
+# Copyright 2022 Taehwan Yoo. All Rights Reserved
+
+version: '2.2'
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: ../Dockerfile
+    hostname: devenv 
+    image: "${COMPOSE_IMAGE_NAME}"
+    environment:
+      - PYTHONPATH=/app/mecab-ko-python3
+      - PYTHONUNBUFFERED=0
+    working_dir: /app/mecab-ko-python3
+    network_mode: host
+    volumes:
+      - ..:/app/mecab-ko-python3:rw
+    entrypoint:
+      - /bin/bash
+    stdin_open: true # -i(interactive) option in docker
+    tty: true # -t(tty) option in docker
+    shm_size: 16G
