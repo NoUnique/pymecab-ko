@@ -8,16 +8,17 @@
 This is a Python wrapper for the [MeCab-ko][] morphological analyzer for Korean text.
 It works with Python 3.6 and greater. 
 
-Even though there are several implementations of python binding or wrapper for MeCab-ko, it is hard to maintain them.
-I made it to stand on the shoulders of giants(Well-maintained open-source projects) with slight modifications.
+Although there are several implementations of python binding or wrapper for MeCab-ko, they are often not maintained well.  
+I made it to stand on the shoulders of giants(Well-maintained open-source projects: [MeCab], [MeCab-ko] and [mecab-python3])  
+with slight modifications.
 
 **Note:** If using MacOS Big Sur, you'll need to upgrade pip to version 20.3 or
 higher to use wheels due to a pip issue.
 
 **issue를 영어로 작성할 필요는 없습니다.**
 
-[MeCab]: https://taku910.github.io/mecab/
-[MeCab-ko]: https://taku910.github.io/mecab/
+[MeCab]: https://taku910.github.io/mecab
+[MeCab-ko]: https://bitbucket.org/eunjeon/mecab-ko
 [mecab-python3]: https://github.com/SamuraiT/mecab-python3
 
 Note that Windows wheels require a [Microsoft Visual C++
