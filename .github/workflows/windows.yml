@@ -63,7 +63,7 @@ jobs:
         ls -la
         ls -la dist
         VERSION=$(python setup.py --version)
-        pip install "dist/mecab_ko_python3-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-win_amd64.whl"
+        pip install "dist/mecab_ko-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-win_amd64.whl"
     - name: Publish to PyPI if tagged
       if: startsWith(github.ref, 'refs/tags')
       env:

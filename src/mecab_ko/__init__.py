@@ -74,12 +74,12 @@ FAILMESSAGE = """
 
 Failed initializing MeCab. Please see the README for possible solutions:
 
-    https://github.com/NoUnique/mecab-ko-python3#common-issues
+    https://github.com/NoUnique/pymecab-ko#common-issues
 
 If you are still having trouble, please file an issue here, and include the
 ERROR DETAILS below:
 
-    https://github.com/NoUnique/mecab-ko-python3/issues
+    https://github.com/NoUnique/pymecab-ko/issues
 
 issue를 영어로 작성할 필요는 없습니다.
 
