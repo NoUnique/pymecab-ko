@@ -32,8 +32,8 @@ Redistributable][msvc], so be sure to install that.
 
 ```py
 >>> import mecab_ko as MeCab
->>> tagger = MeCab.Tagger()
->>> tagger.parse("아버지가방에들어가신다").split()[:-1:2]
+>>> tagger = MeCab.Tagger("-Owakati")
+>>> tagger.parse("아버지가방에들어가신다").split()
 ['아버지', '가', '방', '에', '들어가', '신다']
 
 >>> tagger = MeCab.Tagger()
@@ -119,7 +119,7 @@ You can specify an empty `mecabrc` like this:
 ## Using Unsupported Output Modes like `-Ochasen`
 
 Chasen output is not a built-in feature of MeCab, you must specify it in your
-`dicrc` or `mecabrc`. Notably, Unidic does not include Chasen output format.
+`dicrc` or `mecabrc`. Notably, mecab-ko-dic does not include Chasen output format.
 Please see [the MeCab documentation](https://taku910.github.io/mecab/#format).
 
 # Alternatives
