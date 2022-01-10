@@ -198,7 +198,7 @@ else:
         'build_py': build_py
     }
 
-setup(name = "mecab-ko-python3",
+setup(name = "mecab-ko",
       description =
       "Python wrapper for the MeCab-ko morphological analyzer for Korean",
       long_description = read_and_trim_readme(),

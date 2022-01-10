@@ -1,16 +1,18 @@
-[![Current PyPI packages](https://badge.fury.io/py/mecab-ko-python3.svg)](https://pypi.org/project/mecab-ko-python3/)
-![Test Status](https://github.com/NoUnique/mecab-ko-python3/workflows/test-manylinux/badge.svg)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/mecab-ko-python3)](https://pypi.org/project/mecab-ko-python3/)
+[![Current PyPI packages](https://badge.fury.io/py/mecab-ko.svg)](https://pypi.org/project/mecab-ko/)
+![Test Status](https://github.com/NoUnique/pymecab-ko/workflows/test-manylinux/badge.svg)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/mecab-ko)](https://pypi.org/project/mecab-ko/)
 ![Supported Platforms](https://img.shields.io/badge/platforms-linux%20macosx%20windows-blue)
 
-# mecab-ko-python3
+# pymecab-ko
 
-This is a Python wrapper for the [MeCab-ko][] morphological analyzer for Korean text.
+This is a Python wrapper for the [MeCab-ko] morphological analyzer for Korean text.
 It works with Python 3.6 and greater. 
 
-Although there are several implementations of python binding or wrapper for MeCab-ko, they are often not maintained well.  
-I made it to stand on the shoulders of giants(Well-maintained open-source projects: [MeCab], [MeCab-ko] and [mecab-python3])  
-with slight modifications.
+There are several implementations of python binding or wrapper for MeCab-ko, but they are generally not well maintained.  
+I made it to stand on the shoulders of giants(well-maintained open-source projects like [MeCab], [mecab-ko] and [mecab-python3]) with minimum modifications.  
+I initially named it `mecab-ko-python3` because the package name referenced for development was [mecab-python3],  
+it may seem a little arrogant, but to reduce confusion in the PyPI, the name was changed to 'mecab-ko'.  
+(The repository is named 'pymecab-ko' to distinguish it from original [mecab-ko])  
 
 **Note:** If using MacOS Big Sur, you'll need to upgrade pip to version 20.3 or
 higher to use wheels due to a pip issue.
@@ -18,7 +20,7 @@ higher to use wheels due to a pip issue.
 **issue를 영어로 작성할 필요는 없습니다.**
 
 [MeCab]: https://taku910.github.io/mecab
-[MeCab-ko]: https://bitbucket.org/eunjeon/mecab-ko
+[mecab-ko]: https://bitbucket.org/eunjeon/mecab-ko
 [mecab-python3]: https://github.com/SamuraiT/mecab-python3
 
 Note that Windows wheels require a [Microsoft Visual C++
@@ -45,7 +47,7 @@ Redistributable][msvc], so be sure to install that.
 EOS
 ```
 
-The API for `mecab-ko-python3` closely follows the API for MeCab itself,
+The API for `pymecab-ko` closely follows the API for MeCab itself,
 even when this makes it not very “Pythonic.”  Please consult the [official MeCab
 documentation][mecab-docs] for more information.
 
@@ -57,7 +59,7 @@ Binary wheels are available for MacOS X, Linux, and Windows (64bit) are
 installed by default when you use `pip`:
 
 ```sh
-pip install mecab-ko-python3
+pip install mecab-ko
 ```
 
 These wheels include an internal (statically linked) copy of the MeCab library,
@@ -71,7 +73,7 @@ pip install mecab-ko-dic
 To build from source using pip,
 
 ```sh
-pip install --no-binary :all: mecab-ko-python3
+pip install --no-binary :all: mecab-ko
 ```
 
 ## Dictionaries
@@ -128,7 +130,7 @@ Please see [the MeCab documentation](https://taku910.github.io/mecab/#format).
 
 # Licensing
 
-Like MeCab and mecab-python3, `mecab-ko-python3` is copyrighted free software by
+Like MeCab and mecab-python3, `pymecab-ko` is copyrighted free software by
 Taku Kudo <taku@chasen.org> and Nippon Telegraph and Telephone Corporation,
 and is distributed under a 3-clause BSD license (see the file `BSD`).
 Alternatively, it may be redistributed under the terms of the
