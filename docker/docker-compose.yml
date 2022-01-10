@@ -13,12 +13,12 @@ services:
     hostname: devenv 
     image: "${COMPOSE_IMAGE_NAME}"
     environment:
-      - PYTHONPATH=/app/mecab-ko-python3
+      - PYTHONPATH=/github/workspace
       - PYTHONUNBUFFERED=0
-    working_dir: /app/mecab-ko-python3
+    working_dir: /github/workspace
     network_mode: host
     volumes:
-      - ..:/app/mecab-ko-python3:rw
+      - ..:/github/workspace:rw
     entrypoint:
       - /bin/bash
     stdin_open: true # -i(interactive) option in docker
