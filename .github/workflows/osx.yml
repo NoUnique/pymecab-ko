@@ -49,7 +49,7 @@ jobs:
         # Fix the wheel #18
         pip install delocate
         VERSION=$(python setup.py --version)
-        path_to_wheel=$(find -f dist/mecab_kot-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-macosx*.whl)
+        path_to_wheel=$(find -f dist/mecab_ko-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-macosx*.whl)
         # Unzip the wheel and copy the dylib
         mkdir tmp; cd tmp
         unzip ../$path_to_wheel
@@ -69,7 +69,7 @@ jobs:
       run: |
         ls -la dist
         VERSION=$(python setup.py --version)
-        pip install dist/mecab_kot-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-macosx*.whl
+        pip install dist/mecab_ko-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-macosx*.whl
     - name: Publish to PyPI if tagged
       if: startsWith(github.ref, 'refs/tags')
       env:

@@ -82,7 +82,7 @@ function fn_main() {
                 'https://github.com/NoUnique/mecab-ko.git mecab'
     fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
                 'mecab_python3' \
-                'mecab_kot'
+                'mecab_ko'
     fn_replace ${DIR_TARGET}/.github/workflows/windows.yml \
                 'curl -LO "https://github.com/chezou/mecab/releases/download/mecab-0.996-msvc-5/mecab-msvc-x64.zip"' \
                 'curl -L "https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.9.2-msvc-3/mecab-ko-msvc-x64.zip" -o mecab-msvc-x64.zip'
