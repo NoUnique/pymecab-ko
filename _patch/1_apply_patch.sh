@@ -74,6 +74,9 @@ function fn_main() {
     fn_replace ${DIR_TARGET}/.github/workflows/entrypoint.sh \
                 'git://github.com/taku910/mecab.git' \
                 'git://github.com/NoUnique/mecab-ko.git mecab'
+    fn_replace ${DIR_TARGET}/.github/workflows/manylinux.yml \
+                'https://github.com/taku910/mecab.git' \
+                'https://github.com/NoUnique/mecab-ko.git mecab'
     fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
                 'unidic-lite' \
                 'mecab-ko-dic'

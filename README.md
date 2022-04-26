@@ -62,8 +62,8 @@ installed by default when you use `pip`:
 pip install mecab-ko
 ```
 
-These wheels include an internal (statically linked) copy of the MeCab library,
-but not dictionary. In order to use MeCab you'll need to install a dictionary.
+These wheels include a copy of the MeCab-ko library, but not dictionary.
+In order to use MeCab you'll need to install a dictionary.
 `mecab-ko-dic` is a good one to start with:
 
 ```sh
@@ -78,6 +78,7 @@ pip install --no-binary :all: mecab-ko
 
 ## Dictionaries
 
+In order to use MeCab-ko, you must install a dictionary.
 There is a unique dictionary available for MeCab-ko. These UniDic packages, which include slight modifications for ease of use, are recommended:
 
 - [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built mecab-ko-dic 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py).
