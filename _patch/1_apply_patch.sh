@@ -73,13 +73,16 @@ function fn_main() {
     fn_copy ${DIR_SOURCE}/.github ${DIR_TARGET}
     fn_replace ${DIR_TARGET}/.github/workflows/entrypoint.sh \
                 'git://github.com/taku910/mecab.git' \
-                'git://github.com/NoUnique/mecab-ko.git mecab'
+                'https://github.com/NoUnique/mecab-ko.git mecab'
     fn_replace ${DIR_TARGET}/.github/workflows/manylinux.yml \
                 'https://github.com/taku910/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
     fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
                 'unidic-lite' \
                 'mecab-ko-dic'
+    fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
+                '[ 3.5, 3.6, 3.7, 3.8, 3.9 ]' \
+                '[ 3.6, 3.7, 3.8, 3.9, 3.10 ]'
     fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
                 'https://github.com/taku910/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
