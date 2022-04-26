@@ -24,6 +24,11 @@ make install
 # https://github.com/RalfG/python-wheels-manylinux-build/issues/26
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
 
+# Hack (impact of CVE-2022-24765 fix for git)
+# see here:
+# https://github.com/pypa/setuptools_scm/issues/707
+git config --global --add safe.directory /github/workspace
+
 # Build the wheels
 for PYVER in cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310; do
   # build the wheels
