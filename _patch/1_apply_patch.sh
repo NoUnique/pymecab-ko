@@ -82,7 +82,7 @@ function fn_main() {
                 'mecab-ko-dic'
     fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
                 '[ 3.5, 3.6, 3.7, 3.8, 3.9 ]' \
-                '[ 3.6, 3.7, 3.8, 3.9, 3.10 ]'
+                "[ '3.6', '3.7', '3.8', '3.9', '3.10' ]"
     fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
                 'https://github.com/taku910/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
