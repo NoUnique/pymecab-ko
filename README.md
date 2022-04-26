@@ -62,27 +62,17 @@ installed by default when you use `pip`:
 pip install mecab-ko
 ```
 
-These wheels include a copy of the MeCab-ko library, but not dictionary.
-In order to use MeCab you'll need to install a dictionary.
-`mecab-ko-dic` is a good one to start with:
+These wheels include a copy of the MeCab-ko library and a dictionary.
+There is a unique dictionary available for MeCab-ko. `mecab-ko-dic` is automatically installed when installing pymacab-ko.
 
-```sh
-pip install mecab-ko-dic
-```
+- [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built mecab-ko-dic 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py).
+- [mecab-ko-dic](https://bitbucket.org/eunjeon/mecab-ko-dic): The original source-code of mecab-ko-dic to build dictionary for mecab-ko.
 
 To build from source using pip,
 
 ```sh
 pip install --no-binary :all: mecab-ko
 ```
-
-## Dictionaries
-
-In order to use MeCab-ko, you must install a dictionary.
-There is a unique dictionary available for MeCab-ko. These UniDic packages, which include slight modifications for ease of use, are recommended:
-
-- [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built mecab-ko-dic 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py).
-- [mecab-ko-dic](https://bitbucket.org/eunjeon/mecab-ko-dic): The original source-code of mecab-ko-dic to build dictionary for mecab-ko.
 
 # Common Issues
 
@@ -91,17 +81,6 @@ If you get a `RuntimeError` when you try to run MeCab, here are some things to c
 ## Windows Redistributable
 
 You have to install [this][msvc] to use this package on Windows.
-
-## Installing a Dictionary
-
-Run `pip install mecab-ko-dic` and confirm that works. If that fixes your
-problem, you either don't have a dictionary installed, or you need to specify
-your dictionary path like this:
-
-    tagger = MeCab.Tagger('-r /dev/null -d /usr/local/lib/mecab/dic/mydic')
-
-Note: on Windows, use `nul` instead of `/dev/null`. Alternately, if you have a
-`mecabrc` you can use the path after `-r`.
 
 ## Specifying a mecabrc
 
