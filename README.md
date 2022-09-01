@@ -65,8 +65,8 @@ pip install mecab-ko
 These wheels include a copy of the MeCab-ko library and a dictionary.
 There is a unique dictionary available for MeCab-ko. `mecab-ko-dic` is automatically installed when installing pymacab-ko.
 
-- [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built mecab-ko-dic 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py).
-- [mecab-ko-dic](https://bitbucket.org/eunjeon/mecab-ko-dic): The original source-code of mecab-ko-dic to build dictionary for mecab-ko.
+- [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built [mecab-ko-dic](https://bitbucket.org/eunjeon/mecab-ko-dic) 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py).
+- [openkorpos-dic](https://github.com/NoUnique/openkorpos-dic-py): [a dictionary](https://github.com/openkorpos/model-mecab) trained with [OpenKorPOS](https://github.com/openkorpos/openkorpos)(Free and open alternative to the Sejong corpus)
 
 To build from source using pip,
 
