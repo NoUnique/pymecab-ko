@@ -74,6 +74,9 @@ function fn_main() {
     fn_replace ${DIR_TARGET}/.github/workflows/build_mecab.sh \
                 'https://github.com/polm/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
+    fn_replace ${DIR_TARGET}/.github/workflows/entrypoint.sh \
+                '/github/workspace/wheels/*.whl' \
+                '/github/workspace/wheels/mecab_ko-*.whl'
     fn_replace ${DIR_TARGET}/.github/workflows/manylinux.yml \
                 'https://github.com/taku910/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
