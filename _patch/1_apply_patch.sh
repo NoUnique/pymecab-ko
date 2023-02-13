@@ -71,8 +71,8 @@ function fn_main() {
 
     # patch github actions
     fn_copy ${DIR_SOURCE}/.github ${DIR_TARGET}
-    fn_replace ${DIR_TARGET}/.github/workflows/entrypoint.sh \
-                'git://github.com/taku910/mecab.git' \
+    fn_replace ${DIR_TARGET}/.github/workflows/build_mecab.sh \
+                'https://github.com/polm/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
     fn_replace ${DIR_TARGET}/.github/workflows/manylinux.yml \
                 'https://github.com/taku910/mecab.git' \
@@ -80,9 +80,6 @@ function fn_main() {
     fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
                 'unidic-lite' \
                 'mecab-ko-dic'
-    fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
-                '[ 3.5, 3.6, 3.7, 3.8, 3.9 ]' \
-                "[ '3.6', '3.7', '3.8', '3.9', '3.10' ]"
     fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
                 'https://github.com/taku910/mecab.git' \
                 'https://github.com/NoUnique/mecab-ko.git mecab'
@@ -95,6 +92,11 @@ function fn_main() {
     fn_replace ${DIR_TARGET}/.github/workflows/windows.yml \
                 'mecab_python3' \
                 'mecab_ko'
+    for file in ${DIR_TARGET}/.github/workflows/*.yml; do
+        fn_replace "${file}" \
+                    'twine upload' \
+                    'twine upload ${{ vars.TWINE_ARGS }}'
+    done
     set +x
 }
 

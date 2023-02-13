@@ -65,15 +65,19 @@ pip install mecab-ko
 These wheels include a copy of the MeCab-ko library and a dictionary.
 There is a unique dictionary available for MeCab-ko. `mecab-ko-dic` is automatically installed when installing pymacab-ko.
 
-- [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built [mecab-ko-dic](https://bitbucket.org/eunjeon/mecab-ko-dic) 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py).
-- [openkorpos-dic](https://github.com/NoUnique/openkorpos-dic-py): [a dictionary](https://github.com/openkorpos/model-mecab) trained with [OpenKorPOS](https://github.com/openkorpos/openkorpos)(Free and open alternative to the Sejong corpus)
-
 To build from source using pip,
 
 ```sh
 pip install --no-binary :all: mecab-ko
 ```
 
+## Dictionaries
+
+In order to use MeCab-ko, you must install a dictionary. There are 2 dictionaries available for MeCab-ko.  
+These packages, which include slight modifications for ease of use, are recommended:
+
+- [mecab-ko-dic](https://github.com/LuminosoInsight/mecab-ko-dic): The pre-built [mecab-ko-dic](https://bitbucket.org/eunjeon/mecab-ko-dic) 2.1.1-20180720 based on [ipadic-py](https://github.com/polm/ipadic-py). It will be installed along with pymecab-ko.
+- [openkorpos-dic](https://github.com/NoUnique/openkorpos-dic-py): [a dictionary](https://github.com/openkorpos/model-mecab) trained with [OpenKorPOS](https://github.com/openkorpos/openkorpos)(Free and open alternative to the Sejong corpus)
 # Common Issues
 
 If you get a `RuntimeError` when you try to run MeCab, here are some things to check:
