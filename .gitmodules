@@ -1,3 +1,6 @@
+[submodule ".devcontainer"]
+	path = .devcontainer
+	url = git@github.com:NoUnique/.devcontainer.git
 [submodule "_patch/mecab-python3"]
 	path = _patch/mecab-python3
 	url = https://github.com/SamuraiT/mecab-python3.git

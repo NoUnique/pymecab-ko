@@ -9,7 +9,7 @@ services:
   dev:
     build:
       context: .
-      dockerfile: ../Dockerfile
+      dockerfile: ./Dockerfile
     hostname: devenv 
     image: "${COMPOSE_IMAGE_NAME}"
     environment:
@@ -18,7 +18,8 @@ services:
     working_dir: /github/workspace
     network_mode: host
     volumes:
-      - ..:/github/workspace:rw
+      - .:/app/${COMPOSE_IMAGE_NAME}:rw
+      - .:/github/workspace:rw
     entrypoint:
       - /bin/bash
     stdin_open: true # -i(interactive) option in docker
