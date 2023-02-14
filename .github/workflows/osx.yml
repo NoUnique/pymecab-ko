@@ -56,7 +56,7 @@ jobs:
         # Unzip the wheel and copy the dylib
         mkdir tmp; cd tmp
         unzip ../$path_to_wheel
-        delocate-path -L mecab-python3.dylibs .
+        delocate-path -L pymecab-ko.dylibs .
         # Zip the wheel
         zip -r -D ../$path_to_wheel *
         cd -; rm -rf tmp
