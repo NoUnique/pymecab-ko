@@ -3,4 +3,4 @@ runs:
     using: 'docker'
     image: docker://quay.io/pypa/manylinux2014_x86_64
     args:
-        - .github/workflows/build_mecab.sh
+        - .github/workflows/manylinux/build_mecab.sh

@@ -54,19 +54,19 @@ jobs:
           key: mecab-build-${{ matrix.arch }}
       - name: Build manylinux MeCab
         if: matrix.arch == 'x86_64' && steps.cache-mecab.outputs.cache-hit != 'true'
-        uses: ./.github/workflows/actions/build-manylinux/
+        uses: ./.github/workflows/manylinux/actions/build-manylinux/
       - name: Build manylinux wheels
         if: matrix.arch == 'x86_64'
-        uses: ./.github/workflows/actions/build-wheels/
+        uses: ./.github/workflows/manylinux/actions/build-wheels/
       - name: Set up QEMU
         if: matrix.arch == 'aarch64'
         uses: docker/setup-qemu-action@v1
       - name: Build manylinux2014 MeCab (aarch64)
         if: matrix.arch == 'aarch64' && steps.cache-mecab.outputs.cache-hit != 'true'
-        uses: ./.github/workflows/actions_aarch64/build_manylinux2014/
+        uses: ./.github/workflows/manylinux/actions_aarch64/build_manylinux2014/
       - name: Build manylinux wheels (aarch64)
         if: matrix.arch == 'aarch64'
-        uses: ./.github/workflows/actions_aarch64/build_wheels/
+        uses: ./.github/workflows/manylinux/actions_aarch64/build_wheels/
       - uses: actions/upload-artifact@v4
         with:
           name: release-manylinux-${{ matrix.arch }}
@@ -83,7 +83,7 @@ jobs:
       - name: Download and build MeCab
         shell: bash
         run: |
-          .github/macos-build.sh
+          .github/workflows/macos/build.sh
       - uses: actions/upload-artifact@v4
         with:
           name: release-macos
