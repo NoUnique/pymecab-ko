@@ -8,14 +8,8 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13"]
         include:
-          - python-version: 3.6
-            py-short: 36
-            py-short2: 36m
-          - python-version: 3.7
-            py-short: 37
-            py-short2: 37m
           - python-version: 3.8
             py-short: 38
             py-short2: 38
@@ -28,15 +22,21 @@ jobs:
           - python-version: "3.11"
             py-short: 311
             py-short2: 311
+          - python-version: "3.12"
+            py-short: 312
+            py-short2: 312
+          - python-version: "3.13"
+            py-short: 313
+            py-short2: 313
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Cache mecab
       id: cache-mecab
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: C:/mecab
         key: mecab-win-build
@@ -53,9 +53,9 @@ jobs:
       run: |
         python setup.py bdist_wheel
     - name: Upload Wheel
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
-        name: win-wheels
+        name: win-wheels-${{ matrix.python-version }}
         path: dist
     - name: Check wheels
       shell: bash
@@ -65,7 +65,7 @@ jobs:
         VERSION=$(python setup.py --version)
         pip install "dist/mecab_ko-${VERSION}-cp${{ matrix.py-short }}-cp${{ matrix.py-short2 }}-win_amd64.whl"
     - name: Publish to PyPI if tagged
-      if: startsWith(github.ref, 'refs/tags')
+      if: startsWith(github.ref, 'refs/tags') && github.repository_owner == 'NoUnique'
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}

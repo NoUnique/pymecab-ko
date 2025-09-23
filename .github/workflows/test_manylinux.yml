@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8, 3.9, "3.10", "3.11" ]
+        python-version: [ 3.8, 3.9, "3.10", "3.11", "3.12", "3.13" ]
     env:
       PYTHON: python${{ matrix.python-version }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: docker build -t mecab-py .
     - name: setup and test
       run: docker run -v $(pwd):/workdir -w /workdir mecab-py sh -c "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/ && $PYTHON -m pip install pytest wheel mecab-ko-dic && $PYTHON -m pip install -e . && $PYTHON -m pytest"
