@@ -52,21 +52,21 @@ jobs:
         with:
           path: ${{ github.workspace }}/mecab_${{ matrix.arch }}
           key: mecab-build-${{ matrix.arch }}
-      - name: Build manylinux MeCab
-        if: matrix.arch == 'x86_64' && steps.cache-mecab.outputs.cache-hit != 'true'
-        uses: ./.github/workflows/manylinux/actions/build-manylinux/
       - name: Build manylinux wheels
         if: matrix.arch == 'x86_64'
-        uses: ./.github/workflows/manylinux/actions/build-wheels/
+        uses: docker://quay.io/pypa/manylinux2014_x86_64
+        with:
+          entrypoint: /bin/bash
+          args: -lc ".github/workflows/manylinux/build.sh"
       - name: Set up QEMU
         if: matrix.arch == 'aarch64'
         uses: docker/setup-qemu-action@v1
-      - name: Build manylinux2014 MeCab (aarch64)
-        if: matrix.arch == 'aarch64' && steps.cache-mecab.outputs.cache-hit != 'true'
-        uses: ./.github/workflows/manylinux/actions_aarch64/build_manylinux2014/
       - name: Build manylinux wheels (aarch64)
         if: matrix.arch == 'aarch64'
-        uses: ./.github/workflows/manylinux/actions_aarch64/build_wheels/
+        uses: docker://quay.io/pypa/manylinux2014_aarch64
+        with:
+          entrypoint: /bin/bash
+          args: -lc ".github/workflows/manylinux/build.sh"
       - uses: actions/upload-artifact@v4
         with:
           name: release-manylinux-${{ matrix.arch }}

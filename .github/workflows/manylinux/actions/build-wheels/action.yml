@@ -1,6 +1,0 @@
-name: build wheels with manylinux docker image
-runs:
-    using: 'docker'
-    image: docker://quay.io/pypa/manylinux2014_x86_64
-    args:
-        - .github/workflows/manylinux/build_wheels.sh
