@@ -1,0 +1,197 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_target:
+        description: 'Select the repository for uploading (default: PyPI)'
+        type: choice
+        required: false
+        options: [pypi, testpypi]
+        default: testpypi
+      create_github_release:
+        description: 'Create GitHub Release with built artifacts'
+        type: boolean
+        default: false
+
+jobs:
+  build_sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build sdist
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools-scm build
+          python -m build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-sdist
+          path: dist/*.tar.gz
+
+  build_manylinux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+    env:
+      arch: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Cache mecab
+        id: cache-mecab
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/mecab_${{ matrix.arch }}
+          key: mecab-build-${{ matrix.arch }}
+      - name: Build manylinux MeCab
+        if: matrix.arch == 'x86_64' && steps.cache-mecab.outputs.cache-hit != 'true'
+        uses: ./.github/workflows/actions/build-manylinux/
+      - name: Build manylinux wheels
+        if: matrix.arch == 'x86_64'
+        uses: ./.github/workflows/actions/build-wheels/
+      - name: Set up QEMU
+        if: matrix.arch == 'aarch64'
+        uses: docker/setup-qemu-action@v1
+      - name: Build manylinux2014 MeCab (aarch64)
+        if: matrix.arch == 'aarch64' && steps.cache-mecab.outputs.cache-hit != 'true'
+        uses: ./.github/workflows/actions_aarch64/build_manylinux2014/
+      - name: Build manylinux wheels (aarch64)
+        if: matrix.arch == 'aarch64'
+        uses: ./.github/workflows/actions_aarch64/build_wheels/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-manylinux-${{ matrix.arch }}
+          path: manylinux-wheels/*.whl
+
+  build_macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download and build MeCab
+        shell: bash
+        run: |
+          .github/macos-build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: dist/*.whl
+
+  build_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Cache mecab
+        id: cache-mecab
+        uses: actions/cache@v4
+        with:
+          path: C:/mecab
+          key: mecab-win-build
+      - name: Download MeCab Win and Unzip it
+        if: steps.cache-mecab.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -L "https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.9.2-msvc-3/mecab-ko-msvc-x64.zip" -o mecab-msvc-x64.zip
+          unzip -o "mecab-msvc-x64.zip" -d c:/mecab
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade setuptools wheel pip
+      - name: Build wheel
+        run: |
+          python setup.py bdist_wheel
+      - name: Upload Wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows-${{ matrix.python-version }}
+          path: dist/*.whl
+
+  test_artifacts:
+    if: github.ref_type == 'tag'
+    needs: [build_sdist, build_manylinux, build_macos, build_windows]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-14, windows-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install wheel and run tests
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          python -m pip install --no-index --find-links dist mecab-ko
+          python -m pytest
+
+  publish_pypi:
+    if: github.ref_type == 'tag'
+    needs: [test_artifacts]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Resolve publish target
+        id: publish
+        run: |
+          target="${{ github.event.inputs.publish_target || 'pypi' }}"
+          if [[ "$target" == 'testpypi' ]]; then
+            echo 'url=https://test.pypi.org/legacy/' >> "$GITHUB_OUTPUT"
+          else
+            echo 'url=https://upload.pypi.org/legacy/' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+      - name: Publish distributions
+        uses: pypa/gh-action-pypi-publish@v1
+        with:
+          repository-url: ${{ steps.publish.outputs.url }}
+          packages-dir: dist
+
+  github_release:
+    if: github.ref_type == 'tag' && github.event.inputs.create_github_release == 'true'
+    needs: [test_artifacts]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

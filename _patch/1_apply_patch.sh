@@ -68,41 +68,6 @@ function fn_main() {
     fn_replace ${DIR_TARGET}/src/mecab_ko/cli.py \
                 'from MeCab import Tagger' \
                 'from mecab_ko import Tagger'
-
-    # patch github actions
-    fn_copy ${DIR_SOURCE}/.github ${DIR_TARGET}
-    fn_replace ${DIR_TARGET}/.github/workflows/build_mecab.sh \
-                'https://github.com/polm/mecab.git' \
-                'https://github.com/NoUnique/mecab-ko.git mecab'
-    fn_replace ${DIR_TARGET}/.github/workflows/entrypoint.sh \
-                '/github/workspace/wheels/*.whl' \
-                '/github/workspace/wheels/mecab_ko-*.whl'
-    fn_replace ${DIR_TARGET}/.github/workflows/manylinux.yml \
-                'https://github.com/taku910/mecab.git' \
-                'https://github.com/NoUnique/mecab-ko.git mecab'
-    fn_replace ${DIR_TARGET}/.github/workflows/test_manylinux.yml \
-                'unidic-lite' \
-                'mecab-ko-dic'
-    fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
-                'https://github.com/taku910/mecab.git' \
-                'https://github.com/NoUnique/mecab-ko.git mecab'
-    fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
-                'mecab_python3' \
-                'mecab_ko'
-    fn_replace ${DIR_TARGET}/.github/workflows/osx.yml \
-                'mecab-python3' \
-                'pymecab-ko'
-    fn_replace ${DIR_TARGET}/.github/workflows/windows.yml \
-                'curl -LO "https://github.com/chezou/mecab/releases/download/mecab-0.996-msvc-5/mecab-msvc-x64.zip"' \
-                'curl -L "https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.9.2-msvc-3/mecab-ko-msvc-x64.zip" -o mecab-msvc-x64.zip'
-    fn_replace ${DIR_TARGET}/.github/workflows/windows.yml \
-                'mecab_python3' \
-                'mecab_ko'
-    for file in ${DIR_TARGET}/.github/workflows/*.yml; do
-        fn_replace "${file}" \
-                    'twine upload' \
-                    'twine upload ${{ vars.TWINE_ARGS }}'
-    done
     set +x
 }
 
