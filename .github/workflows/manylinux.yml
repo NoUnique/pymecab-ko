@@ -1,6 +1,19 @@
 name: Build manylinux wheels
 
-on: [push]
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_target:
+        description: 'Select repository when manually triggered (default: PyPI)'
+        type: choice
+        required: false
+        options: [pypi, testpypi]
+        default: pypi
+
 
 jobs:
   build_sdist:
@@ -35,15 +48,23 @@ jobs:
     - name: build sdist
       run: |
         python -m pip install --upgrade pip
-        pip install twine setuptools-scm
+        pip install setuptools-scm
         python setup.py sdist
-    - name: upload to pypi if tagged
-      if: startsWith(github.ref, 'refs/tags') && github.repository_owner == 'NoUnique'
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    - name: Resolve publish target (sdist)
+      id: publish-sdist
       run: |
-        twine upload ${{ vars.TWINE_ARGS }} dist/mecab*.tar.gz
+        set -euo pipefail
+        target="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_target || 'pypi' }}"
+        if [[ "$target" == 'testpypi' ]]; then
+          echo 'url=https://test.pypi.org/legacy/' >> "$GITHUB_OUTPUT"
+        else
+          echo 'url=https://upload.pypi.org/legacy/' >> "$GITHUB_OUTPUT"
+        fi
+    - name: Publish sdist if tagged
+      if: startsWith(github.ref, 'refs/tags') && github.repository_owner == 'NoUnique'
+      uses: pypa/gh-action-pypi-publish@v1
+      with:
+        repository-url: ${{ steps.publish-sdist.outputs.url }}
   build_manylinux:
     runs-on: ubuntu-latest
     strategy:
@@ -95,15 +116,20 @@ jobs:
       with: 
         name: manylinux-wheels-${{ matrix.arch }}
         path: manylinux-wheels
-    - name: Publish to PyPI if tagged
-      if: startsWith(github.ref, 'refs/tags') && github.repository_owner == 'NoUnique'
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    - name: Resolve publish target (wheels)
+      id: publish-wheels
       run: |
-        python --version
-        pip --version
-        python -m pip install --upgrade pip
-        pip install twine setuptools-scm
-        twine upload ${{ vars.TWINE_ARGS }} manylinux-wheels/mecab*whl
+        set -euo pipefail
+        target="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_target || 'pypi' }}"
+        if [[ "$target" == 'testpypi' ]]; then
+          echo 'url=https://test.pypi.org/legacy/' >> "$GITHUB_OUTPUT"
+        else
+          echo 'url=https://upload.pypi.org/legacy/' >> "$GITHUB_OUTPUT"
+        fi
+    - name: Publish wheels if tagged
+      if: startsWith(github.ref, 'refs/tags') && github.repository_owner == 'NoUnique'
+      uses: pypa/gh-action-pypi-publish@v1
+      with:
+        repository-url: ${{ steps.publish-wheels.outputs.url }}
+        packages-dir: manylinux-wheels
 
