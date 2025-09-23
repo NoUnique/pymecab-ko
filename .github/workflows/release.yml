@@ -125,7 +125,6 @@ jobs:
           path: dist/*.whl
 
   test_artifacts:
-    if: github.ref_type == 'tag'
     needs: [build_sdist, build_manylinux, build_macos, build_windows]
     strategy:
       matrix:
@@ -147,7 +146,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest
+          python -m pip install pytest mecab-ko-dic
           python -m pip install --no-index --find-links dist mecab-ko
           python -m pytest
 
