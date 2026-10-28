@@ -1,0 +1,74 @@
+name: Auto release for new Python versions
+
+# Once a month, compare the CPython versions cibuildwheel can build against
+# the wheels published on PyPI for the latest release. When a version is
+# missing (i.e. a new Python came out and cibuildwheel now supports it), the
+# Release workflow is run against the existing release tag: it rebuilds the
+# same source for every platform, tests the wheels, and uploads only the
+# files PyPI does not have yet. No new version or tag is created.
+#
+# Nothing happens when every supported CPython already has a wheel. If the
+# rebuild fails (for example because the SWIG wrapper no longer compiles on
+# the new Python), the failed run is visible in the Actions tab; the fix then
+# needs a regular new release.
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only report what would be rebuilt; do not build or publish'
+        type: boolean
+        default: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      missing: ${{ steps.check.outputs.missing }}
+      version: ${{ steps.check.outputs.version }}
+      tag: ${{ steps.check.outputs.tag }}
+      has_github_release: ${{ steps.gh_release.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install cibuildwheel
+        run: python -m pip install --upgrade pip cibuildwheel
+      - name: Compare buildable CPython versions with PyPI wheels
+        id: check
+        run: python .github/workflows/auto-release/check.py
+      - name: Check for a GitHub Release of the tag
+        id: gh_release
+        if: steps.check.outputs.missing != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.check.outputs.tag }}" >/dev/null 2>&1; then
+            echo 'exists=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'exists=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Summary
+        run: |
+          if [[ -n "${{ steps.check.outputs.missing }}" ]]; then
+            echo "Release ${{ steps.check.outputs.version }} (tag ${{ steps.check.outputs.tag }}) has no wheels for: ${{ steps.check.outputs.missing }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Release ${{ steps.check.outputs.version }} already has wheels for every CPython version cibuildwheel can build." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  rebuild:
+    needs: check
+    if: needs.check.outputs.missing != '' && github.event.inputs.dry_run != 'true'
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.check.outputs.tag }}
+      publish: true
+      update_github_release: ${{ needs.check.outputs.has_github_release == 'true' }}
