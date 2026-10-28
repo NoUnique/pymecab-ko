@@ -1,12 +1,12 @@
 [![Current PyPI packages](https://badge.fury.io/py/mecab-ko.svg)](https://pypi.org/project/mecab-ko/)
-![Test Status](https://github.com/NoUnique/pymecab-ko/workflows/test-manylinux/badge.svg)
+[![Release](https://github.com/NoUnique/pymecab-ko/actions/workflows/release.yml/badge.svg)](https://github.com/NoUnique/pymecab-ko/actions/workflows/release.yml)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/mecab-ko)](https://pypi.org/project/mecab-ko/)
 ![Supported Platforms](https://img.shields.io/badge/platforms-linux%20macosx%20windows-blue)
 
 # pymecab-ko
 
 This is a Python wrapper for the [MeCab-ko] morphological analyzer for Korean text.
-It works with Python 3.6 and greater. 
+It works with Python 3.9 and greater.
 
 There are several implementations of python binding or wrapper for MeCab-ko, but they are generally not well maintained.  
 I made it to stand on the shoulders of giants(well-maintained open-source projects like [MeCab], [mecab-ko] and [mecab-python3]) with minimum modifications.  
@@ -111,6 +111,29 @@ Please see [the MeCab documentation](https://taku910.github.io/mecab/#format).
 - [python-mecab-ko](https://github.com/jonghwanhyeon/python-mecab-ko) is a Python binding for MeCab-ko
 - [mecab-python-msvc](https://github.com/Pusnow/mecab-python-msvc) is a mecab-python for mecab-ko-msvc 
 - [KoNLPy](https://konlpy.org/en/latest/) is a library for Korean NLP that includes a MeCab wrapper
+
+# Releasing
+
+Wheels for Linux (x86_64, aarch64), macOS (x86_64, arm64, universal2) and
+Windows (64bit) are built and tested by [cibuildwheel], configured in
+`pyproject.toml`. The list of CPython versions is intentionally not written
+down anywhere: cibuildwheel builds every CPython it supports, so a new Python
+release is covered as soon as cibuildwheel adds it.
+
+- The **Release** workflow (`.github/workflows/release.yml`) is run manually.
+  Run it against a tag to publish to PyPI (or TestPyPI); run it against a
+  branch to only build and test.
+- The **Auto release** workflow (`.github/workflows/auto-release.yml`) runs
+  monthly. It compares the CPython versions cibuildwheel can build with the
+  wheels on PyPI for the latest release and, if one is missing, runs the
+  Release workflow against that release's tag. The same source is rebuilt
+  and tested on every platform and only the files PyPI does not have yet are
+  uploaded, so the new wheels appear under the existing version; no new
+  version or tag is created. If the rebuild fails (typically because the
+  SWIG wrapper needs a fix for the new Python), the failure shows up in the
+  Actions tab and a regular new release is needed.
+
+[cibuildwheel]: https://cibuildwheel.pypa.io/
 
 # Licensing
 
