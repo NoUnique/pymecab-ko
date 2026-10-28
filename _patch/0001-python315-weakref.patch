@@ -1,0 +1,37 @@
+diff --git a/src/mecab_ko/MeCab_wrap.cpp b/src/mecab_ko/MeCab_wrap.cpp
+--- a/src/mecab_ko/MeCab_wrap.cpp
++++ b/src/mecab_ko/MeCab_wrap.cpp
+@@ -1999,7 +1999,16 @@ SWIG_Python_GetSwigThis(PyObject *pyobj)
+   (void)obj;
+ # ifdef PyWeakref_CheckProxy
+   if (PyWeakref_CheckProxy(pyobj)) {
++#if PY_VERSION_HEX >= 0x030d0000
++    /* PyWeakref_GET_OBJECT was removed in Python 3.15; use the
++       strong-reference API added in 3.13 and drop the extra reference. */
++    if (PyWeakref_GetRef(pyobj, &pyobj) > 0)
++      Py_DECREF(pyobj);
++    else
++      pyobj = NULL;
++#else
+     pyobj = PyWeakref_GET_OBJECT(pyobj);
++#endif
+     if (pyobj && SwigPyObject_Check(pyobj))
+       return (SwigPyObject*) pyobj;
+   }
+@@ -2020,7 +2029,15 @@ SWIG_Python_GetSwigThis(PyObject *pyobj)
+     } else {
+ #ifdef PyWeakref_CheckProxy
+       if (PyWeakref_CheckProxy(pyobj)) {
+-	PyObject *wobj = PyWeakref_GET_OBJECT(pyobj);
++	PyObject *wobj;
++#if PY_VERSION_HEX >= 0x030d0000
++	if (PyWeakref_GetRef(pyobj, &wobj) > 0)
++	  Py_DECREF(wobj);
++	else
++	  wobj = NULL;
++#else
++	wobj = PyWeakref_GET_OBJECT(pyobj);
++#endif
+ 	return wobj ? SWIG_Python_GetSwigThis(wobj) : 0;
+       }
+ #endif

@@ -68,6 +68,10 @@ function fn_main() {
     fn_replace ${DIR_TARGET}/src/mecab_ko/cli.py \
                 'from MeCab import Tagger' \
                 'from mecab_ko import Tagger'
+
+    # patch the SWIG-generated wrapper for Python >= 3.15
+    # (PyWeakref_GET_OBJECT was removed; see 0001-python315-weakref.patch)
+    patch -p1 -d ${DIR_TARGET} < 0001-python315-weakref.patch
     set +x
 }
 
