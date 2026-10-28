@@ -1,84 +1,31 @@
 #!/bin/bash
+# Build and install libmecab (mecab-ko) into /usr/local inside the manylinux
+# container. Invoked by cibuildwheel as `before-all` (see pyproject.toml), so
+# it runs once per container before any wheel is built.
 set -euo pipefail
 
-MODE="${1:-all}"
-ARCH=$(uname -m)
-MANYLINUX_VERSION=2014
-case "$ARCH" in
-  x86_64)
-    PLAT=x86_64
-    ;;
+WORK="$(mktemp -d)"
+cd "$WORK"
+git clone --depth=1 https://github.com/NoUnique/mecab-ko.git mecab
+cd mecab/mecab
+
+# mecab-ko ships config.guess/config.sub from 2011, which do not know aarch64.
+# Replace them with the copies bundled with automake (always newer) when
+# available, otherwise fetch the current ones from GNU config.
+case "$(uname -m)" in
   aarch64|arm64)
-    PLAT=aarch64
+    automake_dir="$(ls -d /usr/share/automake-* 2>/dev/null | sort -V | tail -1 || true)"
+    if [[ -n "$automake_dir" && -f "$automake_dir/config.sub" ]] && grep -q aarch64 "$automake_dir/config.sub"; then
+      cp "$automake_dir/config.guess" "$automake_dir/config.sub" .
+    else
+      curl -fsSL 'https://git.savannah.gnu.org/cgit/config.git/plain/config.guess' -o config.guess
+      curl -fsSL 'https://git.savannah.gnu.org/cgit/config.git/plain/config.sub' -o config.sub
+    fi
+    grep -q aarch64 config.sub || { echo "config.sub does not support aarch64" >&2; exit 1; }
+    chmod +x config.guess config.sub
     ;;
-  *)
-    echo "Unsupported architecture: $ARCH" >&2
-    exit 1
-    ;;
- esac
+esac
 
-MECAB_ROOT="/github/workspace/mecab_${PLAT}"
-SRC_DIR="${MECAB_ROOT}/mecab"
-
-build_mecab() {
-  if [[ -d "$SRC_DIR" ]]; then
-    echo "mecab directory already exists at $SRC_DIR; skipping build."
-    return 0
-  fi
-
-  git clone --depth=1 https://github.com/NoUnique/mecab-ko.git mecab
-
-  if [[ "$PLAT" == "aarch64" ]]; then
-    yum -y update && yum install -y wget
-    wget 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' -O mecab/mecab/config.guess
-    wget 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' -O mecab/mecab/config.sub
-  fi
-
-  mv mecab "$MECAB_ROOT"
-  pushd "$SRC_DIR" >/dev/null
-  ./configure --enable-utf8-only
-  make
-  popd >/dev/null
-}
-
-build_wheels() {
-  build_mecab
-
-  pushd "$SRC_DIR" >/dev/null
-  make install
-  popd >/dev/null
-
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
-
-  WHEELHOUSE=/github/workspace/wheels
-  OUTPUT_DIR=/github/workspace/manylinux-wheels
-  rm -rf "$WHEELHOUSE" "$OUTPUT_DIR"
-  mkdir -p "$WHEELHOUSE" "$OUTPUT_DIR"
-
-  for PYVER in cp38-cp38 cp39-cp39 cp310-cp310 cp311-cp311 cp312-cp312 cp313-cp313; do
-    /opt/python/$PYVER/bin/pip wheel /github/workspace -w "$WHEELHOUSE" || { echo "Failed while building $PYVER wheel" >&2; exit 1; }
-  done
-
-  for wheel in "$WHEELHOUSE"/mecab_ko-*.whl; do
-    auditwheel repair "$wheel" --plat manylinux${MANYLINUX_VERSION}_${PLAT} -w "$OUTPUT_DIR"
-  done
-
-  echo "Built wheels:"
-  ls "$OUTPUT_DIR"
-}
-
-case "$MODE" in
-  build_mecab)
-    build_mecab
-    ;;
-  build_wheels)
-    build_wheels
-    ;;
-  all)
-    build_wheels
-    ;;
-  *)
-    echo "Unknown mode: $MODE" >&2
-    exit 1
-    ;;
- esac
+./configure --enable-utf8-only
+make -j"$(nproc)"
+make install

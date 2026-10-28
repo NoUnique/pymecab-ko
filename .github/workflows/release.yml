@@ -1,5 +1,15 @@
 name: Release
 
+# Builds the sdist and wheels for every supported platform, then publishes
+# them when run against a tag. Wheel building is handled by cibuildwheel
+# (configured in pyproject.toml); the set of CPython versions is not spelled
+# out anywhere in this repository, so new Python releases are picked up
+# automatically once cibuildwheel supports them.
+#
+# The workflow can also be called by another workflow (see auto-release.yml)
+# to rebuild an existing release tag and upload only the files that are not
+# on PyPI yet, e.g. wheels for a CPython version released after the tag.
+
 on:
   workflow_dispatch:
     inputs:
@@ -13,146 +23,77 @@ on:
         description: 'Create GitHub Release with built artifacts'
         type: boolean
         default: false
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Existing release tag to rebuild (e.g. v1.0.3)'
+        type: string
+        required: true
+      publish:
+        description: 'Upload to PyPI, skipping files that already exist there'
+        type: boolean
+        default: false
+      update_github_release:
+        description: 'Attach the built files to the GitHub Release of the tag'
+        type: boolean
+        default: false
 
 jobs:
   build_sdist:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Build sdist
         run: |
-          python -m pip install --upgrade pip
-          pip install setuptools-scm build
+          python -m pip install --upgrade pip build
           python -m build --sdist
       - uses: actions/upload-artifact@v4
         with:
           name: release-sdist
           path: dist/*.tar.gz
 
-  build_manylinux:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [x86_64, aarch64]
-    env:
-      arch: ${{ matrix.arch }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Cache mecab
-        id: cache-mecab
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/mecab_${{ matrix.arch }}
-          key: mecab-build-${{ matrix.arch }}
-      - name: Build manylinux wheels
-        if: matrix.arch == 'x86_64'
-        uses: docker://quay.io/pypa/manylinux2014_x86_64
-        with:
-          entrypoint: /bin/bash
-          args: -lc ".github/workflows/manylinux/build.sh"
-      - name: Set up QEMU
-        if: matrix.arch == 'aarch64'
-        uses: docker/setup-qemu-action@v1
-      - name: Build manylinux wheels (aarch64)
-        if: matrix.arch == 'aarch64'
-        uses: docker://quay.io/pypa/manylinux2014_aarch64
-        with:
-          entrypoint: /bin/bash
-          args: -lc ".github/workflows/manylinux/build.sh"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release-manylinux-${{ matrix.arch }}
-          path: manylinux-wheels/*.whl
-
-  build_macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Download and build MeCab
-        shell: bash
-        run: |
-          .github/workflows/macos/build.sh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release-macos
-          path: dist/*.whl
-
-  build_windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Cache mecab
-        id: cache-mecab
-        uses: actions/cache@v4
-        with:
-          path: C:/mecab
-          key: mecab-win-build
-      - name: Download MeCab Win and Unzip it
-        if: steps.cache-mecab.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          curl -L "https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.9.2-msvc-3/mecab-ko-msvc-x64.zip" -o mecab-msvc-x64.zip
-          unzip -o "mecab-msvc-x64.zip" -d c:/mecab
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade setuptools wheel pip
-      - name: Build wheel
-        run: |
-          python setup.py bdist_wheel
-      - name: Upload Wheel
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-windows-${{ matrix.python-version }}
-          path: dist/*.whl
-
-  test_artifacts:
-    needs: [build_sdist, build_manylinux, build_macos, build_windows]
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-13, macos-14, windows-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest      # manylinux2014 x86_64
+          - ubuntu-24.04-arm   # manylinux2014 aarch64 (native, no QEMU)
+          - macos-latest       # x86_64 + arm64 + universal2
+          - windows-latest     # win_amd64
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
         with:
-          pattern: release-*
-          path: dist
-          merge-multiple: true
-      - name: Set up Python
-        uses: actions/setup-python@v5
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install wheel and run tests
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest mecab-ko-dic
-          python -m pip install --no-index --find-links dist mecab-ko
-          python -m pytest
+          python-version: '3.12'
+      # Always the latest cibuildwheel from PyPI (there is no floating major
+      # tag of the pypa/cibuildwheel action), so new CPython versions are
+      # picked up without touching this file. auto-release/check.py installs
+      # it the same way, so both sides agree on what can be built.
+      - name: Install cibuildwheel
+        run: python -m pip install --upgrade pip cibuildwheel
+      - name: Build and test wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
 
   publish_pypi:
-    if: github.ref_type == 'tag'
-    needs: [test_artifacts]
+    if: github.ref_type == 'tag' || inputs.publish
+    needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -177,10 +118,15 @@ jobs:
         with:
           repository-url: ${{ steps.publish.outputs.url }}
           packages-dir: dist
+          # When rebuilding an existing release only the new files are
+          # uploaded; files already on PyPI are skipped instead of failing.
+          skip-existing: ${{ inputs.publish || false }}
 
   github_release:
-    if: github.ref_type == 'tag' && github.event.inputs.create_github_release == 'true'
-    needs: [test_artifacts]
+    if: >-
+      (github.ref_type == 'tag' && github.event.inputs.create_github_release == 'true')
+      || (inputs.publish && inputs.update_github_release)
+    needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -190,7 +136,8 @@ jobs:
           pattern: release-*
           path: dist
           merge-multiple: true
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
           files: dist/*

@@ -1,11 +1,14 @@
 #!/bin/bash
+# Build a universal (arm64 + x86_64) libmecab (mecab-ko) and install it into
+# /usr/local. Invoked by cibuildwheel as `before-all` (see pyproject.toml).
 set -eou pipefail
 
 FLAGS="--enable-utf8-only"
 X86_TRIPLET=x86_64-apple-macos10.9
 ARM_TRIPLET=arm64-apple-macos11
 
-
+WORK="$(mktemp -d)"
+cd "$WORK"
 git clone --depth=1 https://github.com/NoUnique/mecab-ko.git mecab
 cd mecab/mecab
 
@@ -48,11 +51,3 @@ cd ../..
 mv src/.libs.combined src/.libs
 
 sudo make install
-cd ../..
-
-python -m pip install --upgrade setuptools wheel pip setuptools-scm
-python -m pip install cibuildwheel==2.21.3
-
-# don't bother with pypy wheels
-export CIBW_SKIP="pp*"
-python -m cibuildwheel --platform macos --archs x86_64,arm64,universal2 --output-dir dist

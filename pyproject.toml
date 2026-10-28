@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Wheel builds for every platform are driven by cibuildwheel. The set of
+# CPython versions is NOT listed here on purpose: cibuildwheel builds every
+# CPython it knows about, so a new Python release is picked up as soon as
+# cibuildwheel itself supports it (the release workflow always installs the
+# latest cibuildwheel).
+[tool.cibuildwheel]
+build = "cp*"
+skip = [
+  "pp*",             # no PyPy wheels
+  "cp3??t-*",        # no free-threaded wheels (SWIG builtin wrappers are not audited for it)
+  "*-musllinux_*",   # glibc only, as before
+  "*-manylinux_i686",
+  "*-win32",
+  "*-win_arm64",
+]
+build-verbosity = 1
+test-requires = ["pytest", "mecab-ko-dic"]
+test-command = "pytest {project}/test"
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
+before-all = "bash {package}/.github/workflows/manylinux/build.sh"
+environment = { LD_LIBRARY_PATH = "/usr/local/lib" }
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64", "universal2"]
+before-all = "bash {package}/.github/workflows/macos/build.sh"
+
+[tool.cibuildwheel.windows]
+# setup.py expects the prebuilt mecab-ko (MSVC build) under c:\mecab
+before-all = [
+  'curl -L -o "%TEMP%\mecab-ko-msvc-x64.zip" https://github.com/Pusnow/mecab-ko-msvc/releases/download/release-0.9.2-msvc-3/mecab-ko-msvc-x64.zip',
+  'if not exist c:\mecab mkdir c:\mecab',
+  'tar -xf "%TEMP%\mecab-ko-msvc-x64.zip" -C c:\mecab',
+]
